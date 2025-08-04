@@ -1,5 +1,5 @@
-import React, { useContext } from 'react'
-import { Routes, Route, useLocation, useMatch } from 'react-router-dom'
+import React from 'react'
+import { Routes, Route, useMatch } from 'react-router-dom'
 import Navbar from './components/student/Navbar'
 import Home from './pages/student/Home'
 import CourseDetails from './pages/student/CourseDetails'
@@ -15,18 +15,15 @@ import { ToastContainer } from 'react-toastify'
 import Player from './pages/student/Player'
 import MyEnrollments from './pages/student/MyEnrollments'
 import Loading from './components/student/Loading'
-import Admin from './pages/admin/Admin'
+
+/* ✅ Admin Pages */
+import AdminLayout from './pages/admin/Admin'       // ✅ Renamed import to avoid conflict
 import AdminDashboard from './pages/admin/AdminDashboard'
 import EducatorRequests from './pages/admin/EducatorRequests'
 import AllEducators from './pages/admin/AllEducators'
 import AdminLogin from './pages/admin/AdminLogin'
-import { AdminProvider } from './context/AdminContext'
-import ProtectedAdminRoute from './components/admin/ProtectedAdminRoute'
-import Admin from './pages/admin/Admin'
-import AdminDashboard from './pages/admin/AdminDashboard'
-import EducatorRequests from './pages/admin/EducatorRequests'
-import AllEducators from './pages/admin/AllEducators'
-import AdminLogin from './pages/admin/AdminLogin'
+
+/* ✅ Admin Context */
 import { AdminProvider } from './context/AdminContext'
 import ProtectedAdminRoute from './components/admin/ProtectedAdminRoute'
 
@@ -34,16 +31,17 @@ const App = () => {
 
   const isEducatorRoute = useMatch('/educator/*');
   const isAdminRoute = useMatch('/admin/*');
-  const isAdminRoute = useMatch('/admin/*');
 
   return (
     <AdminProvider>
-    <AdminProvider>
       <div className="text-default min-h-screen bg-white">
         <ToastContainer />
-        {/* Render Student Navbar only if not on educator routes */}
+
+        {/* Show Student Navbar only if not on educator/admin routes */}
         {!isEducatorRoute && !isAdminRoute && <Navbar />}
+
         <Routes>
+          {/* Student Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/course/:id" element={<CourseDetails />} />
           <Route path="/course-list" element={<CoursesList />} />
@@ -51,39 +49,28 @@ const App = () => {
           <Route path="/my-enrollments" element={<MyEnrollments />} />
           <Route path="/player/:courseId" element={<Player />} />
           <Route path="/loading/:path" element={<Loading />} />
+
+          {/* Educator Routes */}
           <Route path='/educator' element={<Educator />}>
-            <Route path='/educator' element={<Dashboard />} />
+            <Route index element={<Dashboard />} />
             <Route path='add-course' element={<AddCourse />} />
             <Route path='my-courses' element={<MyCourses />} />
             <Route path='student-enrolled' element={<StudentsEnrolled />} />
           </Route>
-          
+
           {/* Admin Routes */}
           <Route path='/admin/login' element={<AdminLogin />} />
           <Route path='/admin' element={
             <ProtectedAdminRoute>
-              <Admin />
+              <AdminLayout />  {/* ✅ Use AdminLayout instead of Admin */}
             </ProtectedAdminRoute>
           }>
-            <Route path='/admin/dashboard' element={<AdminDashboard />} />
-            <Route path='educator-requests' element={<EducatorRequests />} />
-            <Route path='all-educators' element={<AllEducators />} />
-          </Route>
-          
-          {/* Admin Routes */}
-          <Route path='/admin/login' element={<AdminLogin />} />
-          <Route path='/admin' element={
-            <ProtectedAdminRoute>
-              <Admin />
-            </ProtectedAdminRoute>
-          }>
-            <Route path='/admin/dashboard' element={<AdminDashboard />} />
+            <Route path='dashboard' element={<AdminDashboard />} />
             <Route path='educator-requests' element={<EducatorRequests />} />
             <Route path='all-educators' element={<AllEducators />} />
           </Route>
         </Routes>
       </div>
-    </AdminProvider>
     </AdminProvider>
   )
 }
