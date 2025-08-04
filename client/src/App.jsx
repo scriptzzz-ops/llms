@@ -22,13 +22,22 @@ import AllEducators from './pages/admin/AllEducators'
 import AdminLogin from './pages/admin/AdminLogin'
 import { AdminProvider } from './context/AdminContext'
 import ProtectedAdminRoute from './components/admin/ProtectedAdminRoute'
+import Admin from './pages/admin/Admin'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import EducatorRequests from './pages/admin/EducatorRequests'
+import AllEducators from './pages/admin/AllEducators'
+import AdminLogin from './pages/admin/AdminLogin'
+import { AdminProvider } from './context/AdminContext'
+import ProtectedAdminRoute from './components/admin/ProtectedAdminRoute'
 
 const App = () => {
 
   const isEducatorRoute = useMatch('/educator/*');
   const isAdminRoute = useMatch('/admin/*');
+  const isAdminRoute = useMatch('/admin/*');
 
   return (
+    <AdminProvider>
     <AdminProvider>
       <div className="text-default min-h-screen bg-white">
         <ToastContainer />
@@ -60,8 +69,21 @@ const App = () => {
             <Route path='educator-requests' element={<EducatorRequests />} />
             <Route path='all-educators' element={<AllEducators />} />
           </Route>
+          
+          {/* Admin Routes */}
+          <Route path='/admin/login' element={<AdminLogin />} />
+          <Route path='/admin' element={
+            <ProtectedAdminRoute>
+              <Admin />
+            </ProtectedAdminRoute>
+          }>
+            <Route path='/admin/dashboard' element={<AdminDashboard />} />
+            <Route path='educator-requests' element={<EducatorRequests />} />
+            <Route path='all-educators' element={<AllEducators />} />
+          </Route>
         </Routes>
       </div>
+    </AdminProvider>
     </AdminProvider>
   )
 }

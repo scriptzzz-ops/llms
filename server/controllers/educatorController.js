@@ -5,6 +5,8 @@ import User from '../models/User.js';
 import { clerkClient } from '@clerk/express'
 import EducatorRequest from '../models/EducatorRequest.js';
 import { sendEducatorRequestEmail } from '../configs/email.js';
+import EducatorRequest from '../models/EducatorRequest.js';
+import { sendEducatorRequestEmail } from '../configs/email.js';
 
 // Request to become educator
 export const requestEducatorRole = async (req, res) => {
@@ -19,6 +21,30 @@ export const requestEducatorRole = async (req, res) => {
             status: { $in: ['pending', 'approved'] } 
         });
 
+        if (existingRequest) {
+            if (existingRequest.status === 'approved') {
+                return res.json({ success: false, message: 'You are already an educator' });
+            }
+            return res.json({ success: false, message: 'Your educator request is already pending approval' });
+        }
+
+        // Create new educator request
+        await EducatorRequest.create({ userId });
+
+        // Get user details for email
+        const userDetails = await clerkClient.users.getUser(userId);
+        
+        // Send email notification to admin
+        try {
+            await sendEducatorRequestEmail({
+                name: userDetails.firstName + ' ' + userDetails.lastName,
+                email: userDetails.emailAddresses[0].emailAddress,
+                userId: userId
+            });
+        } catch (emailError) {
+            console.error('Failed to send email notification:', emailError);
+            // Don't fail the request if email fails
+        }
         if (existingRequest) {
             if (existingRequest.status === 'approved') {
                 return res.json({ success: false, message: 'You are already an educator' });
