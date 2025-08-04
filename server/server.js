@@ -9,7 +9,7 @@ import { clerkWebhooks, stripeWebhooks } from './controllers/webhooks.js'
 import educatorRouter from './routes/educatorRoutes.js'
 import courseRouter from './routes/courseRoute.js'
 import adminRouter from './routes/adminRoutes.js'
-import adminRouter from './routes/adminRoutes.js'
+
 
 // Initialize Express
 const app = express()
