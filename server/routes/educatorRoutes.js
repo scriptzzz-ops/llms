@@ -1,25 +1,29 @@
-import express from 'express'
-import { addCourse, educatorDashboardData, getEducatorCourses, getEnrolledStudentsData, requestEducatorRole } from '../controllers/educatorController.js';
+import express from 'express';
 import upload from '../configs/multer.js';
-import { protectEducator } from '../middlewares/authMiddleware.js';
+import {
+  addCourse,
+  educatorDashboardData,
+  getEducatorCourses,
+  getEnrolledStudentsData,
+  requestEducatorRole
+} from '../controllers/educatorController.js';
+import { protect } from '../middlewares/authMiddleware.js';
 
+const educatorRouter = express.Router();
 
-const educatorRouter = express.Router()
+// ✅ Student requests to become educator (protected)
+educatorRouter.post('/request-role', protect, requestEducatorRole);
 
-// Request Educator Role 
-educatorRouter.post('/request-role', requestEducatorRole)
+// ✅ Add Courses (only educators)
+educatorRouter.post('/add-course', upload.single('image'), protect, addCourse);
 
-// Add Courses 
-educatorRouter.post('/add-course', upload.single('image'), protectEducator, addCourse)
+// ✅ Get Educator Courses
+educatorRouter.get('/courses', protect, getEducatorCourses);
 
-// Get Educator Courses 
-educatorRouter.get('/courses', protectEducator, getEducatorCourses)
+// ✅ Get Educator Dashboard Data
+educatorRouter.get('/dashboard', protect, educatorDashboardData);
 
-// Get Educator Dashboard Data
-educatorRouter.get('/dashboard', protectEducator, educatorDashboardData)
-
-// Get Educator Students Data
-educatorRouter.get('/enrolled-students', protectEducator, getEnrolledStudentsData)
-
+// ✅ Get Students Enrolled
+educatorRouter.get('/enrolled-students', protect, getEnrolledStudentsData);
 
 export default educatorRouter;
