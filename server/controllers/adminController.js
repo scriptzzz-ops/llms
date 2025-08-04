@@ -4,7 +4,7 @@ import Admin from '../models/Admin.js';
 import { clerkClient } from '@clerk/express';
 import jwt from 'jsonwebtoken';
 
-// Admin Login
+// ✅ Admin Login
 export const adminLogin = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -14,16 +14,10 @@ export const adminLogin = async (req, res) => {
         }
 
         const admin = await Admin.findOne({ username });
-        
-        if (!admin) {
-            return res.json({ success: false, message: 'Invalid credentials' });
-        }
+        if (!admin) return res.json({ success: false, message: 'Invalid credentials' });
 
         const isPasswordValid = await admin.comparePassword(password);
-        
-        if (!isPasswordValid) {
-            return res.json({ success: false, message: 'Invalid credentials' });
-        }
+        if (!isPasswordValid) return res.json({ success: false, message: 'Invalid credentials' });
 
         const token = jwt.sign(
             { adminId: admin._id, role: 'admin' },
@@ -41,13 +35,12 @@ export const adminLogin = async (req, res) => {
                 email: admin.email
             }
         });
-
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
 };
 
-// Get all educator requests
+// ✅ Get all educator requests
 export const getEducatorRequests = async (req, res) => {
     try {
         const requests = await EducatorRequest.find()
@@ -60,30 +53,23 @@ export const getEducatorRequests = async (req, res) => {
     }
 };
 
-// Approve educator request
+// ✅ Approve educator request
 export const approveEducatorRequest = async (req, res) => {
     try {
         const { requestId } = req.body;
         const adminId = req.admin.adminId;
 
         const request = await EducatorRequest.findById(requestId);
-        
-        if (!request) {
-            return res.json({ success: false, message: 'Request not found' });
-        }
+        if (!request) return res.json({ success: false, message: 'Request not found' });
 
         if (request.status !== 'pending') {
             return res.json({ success: false, message: 'Request already processed' });
         }
 
-        // Update user role in Clerk
         await clerkClient.users.updateUserMetadata(request.userId, {
-            publicMetadata: {
-                role: 'educator',
-            },
+            publicMetadata: { role: 'educator' },
         });
 
-        // Update request status
         request.status = 'approved';
         request.approvedBy = adminId;
         request.approvedDate = new Date();
@@ -95,22 +81,18 @@ export const approveEducatorRequest = async (req, res) => {
     }
 };
 
-// Reject educator request
+// ✅ Reject educator request
 export const rejectEducatorRequest = async (req, res) => {
     try {
         const { requestId, reason } = req.body;
 
         const request = await EducatorRequest.findById(requestId);
-        
-        if (!request) {
-            return res.json({ success: false, message: 'Request not found' });
-        }
+        if (!request) return res.json({ success: false, message: 'Request not found' });
 
         if (request.status !== 'pending') {
             return res.json({ success: false, message: 'Request already processed' });
         }
 
-        // Update request status
         request.status = 'rejected';
         request.rejectionReason = reason || 'No reason provided';
         await request.save();
@@ -121,10 +103,9 @@ export const rejectEducatorRequest = async (req, res) => {
     }
 };
 
-// Get all educators
+// ✅ Get all educators
 export const getAllEducators = async (req, res) => {
     try {
-        // Get all approved educator requests
         const approvedRequests = await EducatorRequest.find({ status: 'approved' })
             .populate('userId', 'name email imageUrl createdAt');
 
@@ -139,13 +120,13 @@ export const getAllEducators = async (req, res) => {
     }
 };
 
-// Admin dashboard data
+// ✅ Admin dashboard data
 export const getAdminDashboard = async (req, res) => {
     try {
         const totalUsers = await User.countDocuments();
         const pendingRequests = await EducatorRequest.countDocuments({ status: 'pending' });
         const totalEducators = await EducatorRequest.countDocuments({ status: 'approved' });
-        
+
         const recentRequests = await EducatorRequest.find({ status: 'pending' })
             .populate('userId', 'name email imageUrl')
             .sort({ createdAt: -1 })
@@ -165,25 +146,24 @@ export const getAdminDashboard = async (req, res) => {
     }
 };
 
-// Create default admin (for initial setup)
+// ✅ Create default admin (one-time setup)
 export const createDefaultAdmin = async (req, res) => {
     try {
         const existingAdmin = await Admin.findOne({ username: 'admin' });
-        
         if (existingAdmin) {
             return res.json({ success: false, message: 'Admin already exists' });
         }
 
         const admin = new Admin({
             username: 'admin',
-            password: 'admin123', // This will be hashed automatically
+            password: 'admin123',
             email: process.env.ADMIN_EMAIL || 'admin@edemy.com'
         });
 
         await admin.save();
 
-        res.json({ 
-            success: true, 
+        res.json({
+            success: true,
             message: 'Default admin created successfully',
             credentials: {
                 username: 'admin',
