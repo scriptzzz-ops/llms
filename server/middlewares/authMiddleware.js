@@ -1,27 +1,24 @@
 import { clerkClient } from "@clerk/express"
 
-// Middleware ( Protect Educator Routes )
-export const protectEducator = async (req,res,next) => {
-
+// ✅ Protect Educator Routes
+export const protectEducator = async (req, res, next) => {
     try {
-
         const userId = req.auth.userId
         
         const response = await clerkClient.users.getUser(userId)
 
         if (response.publicMetadata.role !== 'educator') {
-            return res.json({success:false, message: 'Unauthorized Access'})
+            return res.json({ success: false, message: 'Unauthorized Access: Educator role required' })
         }
         
-        next ()
+        next()
 
     } catch (error) {
-        res.json({success:false, message: error.message})
+        res.json({ success: false, message: error.message })
     }
-
 }
 
-// Middleware ( Protect Admin Routes )
+// ✅ Protect Admin Routes
 export const protectAdmin = async (req, res, next) => {
     try {
         const userId = req.auth.userId
@@ -29,12 +26,12 @@ export const protectAdmin = async (req, res, next) => {
         const response = await clerkClient.users.getUser(userId)
 
         if (response.publicMetadata.role !== 'admin') {
-            return res.json({success: false, message: 'Admin access required'})
+            return res.json({ success: false, message: 'Admin access required' })
         }
         
         next()
 
     } catch (error) {
-        res.json({success: false, message: error.message})
+        res.json({ success: false, message: error.message })
     }
 }
